@@ -8,13 +8,13 @@ This system consists of the following microservices:
 
 | Service             | Port | Description                          |
 | ------------------- | ---- | ------------------------------------ |
-| API Gateway         | 8000 | Central entry point for all requests |
-| Book Service        | 8001 | Manages book inventory               |
-| Member Service      | 8002 | Handles library members              |
-| Borrow Service      | 8003 | Manages book borrowing               |
-| Review Service      | 8004 | Handles book reviews                 |
-| Staff Service       | 8005 | Manages library staff                |
-| Reservation Service | 8006 | Handles book reservations            |
+| API Gateway         | 8080 | Central entry point for all requests |
+| Book Service        | 8081 | Manages book inventory               |
+| Member Service      | 8082 | Handles library members              |
+| Borrow Service      | 8083 | Manages book borrowing               |
+| Review Service      | 8084 | Handles book reviews                 |
+| Staff Service       | 8085 | Manages library staff                |
+| Reservation Service | 8086 | Handles book reservations            |
 
 ## Project Structure
 
