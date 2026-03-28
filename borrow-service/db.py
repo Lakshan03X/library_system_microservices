@@ -8,8 +8,10 @@ except Exception:
 
 load_dotenv()
 
-MONGO_URI = os.getenv("MONGO_URI", "mongodb://localhost:27017")
-DB_NAME = os.getenv("DB_NAME", "library_db")
+MONGO_URI = os.getenv("MONGO_URI")
+
+DB_NAME = os.getenv("DB_NAME")
+
 
 DB_MODE = "memory"
 borrow_collection = None
