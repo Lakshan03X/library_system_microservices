@@ -1,7 +1,31 @@
 {
+  "book_id": "book2",
+  "member_id": "m12",
+  "rating": 4,
+  "comment": "Very engaging story with well-developed characters.",
+  "review_date": "2026-03-25T10:15:30.000Z"
+}
+
+{
+  "book_id": "book3",
+  "member_id": "m8",
+  "rating": 3,
+  "comment": "Good concept, but the pacing was a bit slow in the middle.",
+  "review_date": "2026-03-20T08:45:12.000Z"
+}
+
+{
   "book_id": "book1",
-  "member_id": "m5",
+  "member_id": "m15",
   "rating": 5,
-  "comment": "nice",
-  "review_date": "2026-03-28T14:53:59.037Z"
+  "comment": "Excellent book! Highly recommended for everyone.",
+  "review_date": "2026-03-27T16:22:05.000Z"
+}
+
+{
+  "book_id": "book4",
+  "member_id": "m3",
+  "rating": 2,
+  "comment": "Not very interesting, expected more from the storyline.",
+  "review_date": "2026-03-18T12:05:44.000Z"
 }
