@@ -81,12 +81,28 @@ def delete_member(member_id: str):
 
 # --------------- BORROW SERVICE ROUTES ---------------
 @router.get("/borrows")
-def get_borrows():
-    return _safe_forward("GET", f"{BORROW_SERVICE}/borrows")
+def get_all_borrows():
+    return _safe_forward("GET", f"{BORROW_SERVICE}/borrows/")
+
+@router.get("/borrows/status/overdue")
+def get_overdue_borrows():
+    return _safe_forward("GET", f"{BORROW_SERVICE}/borrows/status/overdue")
+
+@router.get("/borrows/member/{member_id}")
+def get_borrows_by_member(member_id: str):
+    return _safe_forward("GET", f"{BORROW_SERVICE}/borrows/member/{member_id}")
+
+@router.get("/borrows/book/{book_id}")
+def get_borrows_by_book(book_id: str):
+    return _safe_forward("GET", f"{BORROW_SERVICE}/borrows/book/{book_id}")
+
+@router.get("/borrows/{borrow_id}")
+def get_borrow(borrow_id: str):
+    return _safe_forward("GET", f"{BORROW_SERVICE}/borrows/{borrow_id}")
 
 @router.post("/borrows")
 def create_borrow(payload: dict):
-    return _safe_forward("POST", f"{BORROW_SERVICE}/borrows", payload)
+    return _safe_forward("POST", f"{BORROW_SERVICE}/borrows/", payload)
 
 @router.put("/borrows/{borrow_id}")
 def update_borrow(borrow_id: str, payload: dict):
@@ -96,6 +112,13 @@ def update_borrow(borrow_id: str, payload: dict):
 def delete_borrow(borrow_id: str):
     return _safe_forward("DELETE", f"{BORROW_SERVICE}/borrows/{borrow_id}")
 
+@router.put("/borrows/{borrow_id}/return")
+def return_book(borrow_id: str):
+    return _safe_forward("PUT", f"{BORROW_SERVICE}/borrows/{borrow_id}/return")
+
+@router.put("/borrows/{borrow_id}/overdue")
+def mark_overdue(borrow_id: str):
+    return _safe_forward("PUT", f"{BORROW_SERVICE}/borrows/{borrow_id}/overdue")
 
 # --------------- REVIEW SERVICE ROUTES ---------------
 @router.get("/reviews")

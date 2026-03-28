@@ -1,0 +1,35 @@
+{
+  "borrow_id": "BW01",
+  "book_id": [
+    "Book01","Book89","Book76"
+  ],
+  "member_id": "M02",
+  "borrow_date": "2026-04-06T13:05:13.565Z",
+  "due_date": "2026-04-20T13:05:13.565Z",
+  "status": "borrowed"
+}
+......................................................
+{
+  "borrow_id": "BW02",
+  "book_id": [
+    "Book01","Book59","Book36"
+  ],
+  "member_id": "M03",
+  "borrow_date": "2026-04-07T13:05:13.565Z",
+  "due_date": "2026-04-10T13:05:13.565Z",
+  "status": "borrowed"
+}
+......................................................
+{
+  "borrow_id": "BW03",
+  "book_id": [
+    "Book61","Book09","Book16"
+  ],
+  "member_id": "M04",
+  "borrow_date": "2026-04-07T13:05:13.565Z",
+  "due_date": "2026-04-10T13:05:13.565Z",
+  "status": "borrowed"
+}
+
+
+
