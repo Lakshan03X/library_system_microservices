@@ -1,0 +1,7 @@
+{
+  "book_id": "book1",
+  "member_id": "m5",
+  "rating": 5,
+  "comment": "nice",
+  "review_date": "2026-03-28T14:53:59.037Z"
+}
