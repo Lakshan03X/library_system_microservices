@@ -84,13 +84,28 @@ def delete_borrow(borrow_id: str):
 
 # --------------- REVIEW SERVICE ROUTES ---------------
 @router.get("/reviews")
-def get_reviews():
-    resp = requests.get(f"{REVIEW_SERVICE}/reviews")
+def get_all_reviews():
+    resp = requests.get(f"{REVIEW_SERVICE}/reviews/")
+    return resp.json()
+
+@router.get("/reviews/book/{book_id}")
+def get_reviews_by_book(book_id: str):
+    resp = requests.get(f"{REVIEW_SERVICE}/reviews/book/{book_id}")
+    return resp.json()
+
+@router.get("/reviews/member/{member_id}")
+def get_reviews_by_member(member_id: str):
+    resp = requests.get(f"{REVIEW_SERVICE}/reviews/member/{member_id}")
+    return resp.json()
+
+@router.get("/reviews/{review_id}")
+def get_review(review_id: str):
+    resp = requests.get(f"{REVIEW_SERVICE}/reviews/{review_id}")
     return resp.json()
 
 @router.post("/reviews")
 def create_review(payload: dict):
-    resp = requests.post(f"{REVIEW_SERVICE}/reviews", json=payload)
+    resp = requests.post(f"{REVIEW_SERVICE}/reviews/", json=payload)
     return resp.json()
 
 @router.put("/reviews/{review_id}")
