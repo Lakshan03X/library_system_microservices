@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import Optional
+from typing import Optional, List
 from datetime import datetime
 from enum import Enum
 
@@ -11,7 +11,8 @@ class BorrowStatus(str, Enum):
 
 
 class BorrowCreate(BaseModel):
-    book_id: str
+    borrow_id: str
+    book_id: List[str]
     member_id: str
     borrow_date: datetime = Field(default_factory=datetime.utcnow)
     due_date: datetime
@@ -19,7 +20,7 @@ class BorrowCreate(BaseModel):
 
 
 class BorrowUpdate(BaseModel):
-    book_id: Optional[str] = None
+    book_id: Optional[List[str]] = None
     member_id: Optional[str] = None
     borrow_date: Optional[datetime] = None
     due_date: Optional[datetime] = None
@@ -29,7 +30,8 @@ class BorrowUpdate(BaseModel):
 
 class BorrowResponse(BaseModel):
     id: str
-    book_id: str
+    borrow_id: str
+    book_id: List[str]
     member_id: str
     borrow_date: datetime
     due_date: datetime
