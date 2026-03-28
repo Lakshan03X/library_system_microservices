@@ -1,37 +1,32 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
 from routes import router
+
+load_dotenv()
 
 app = FastAPI(
     title="Member Service",
-    description="""
-## Library Management System — Member Service
-
-Handles all library member operations including registration,
-profile management, membership status, and member lookup.
-
-### Endpoints
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | /api/members/ | Register new member |
-| GET | /api/members/ | Get all members |
-| GET | /api/members/{id} | Get member by ID |
-| GET | /api/members/status/{status} | Filter by status |
-| GET | /api/members/type/{type} | Filter by membership type |
-| PUT | /api/members/{id} | Update member |
-| PATCH | /api/members/{id}/suspend | Suspend member |
-| PATCH | /api/members/{id}/activate | Activate member |
-| DELETE | /api/members/{id} | Delete member |
-    """,
+    description="Microservice for managing library members",
     version="1.0.0"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(router)
 
 
-@app.get("/", tags=["Health"])
+@app.get("/")
 def root():
-    return {
-        "service": "Member Service",
-        "status": "running",
-        "docs": "http://localhost:8002/docs"
-    }
+    return {"message": "Member Service", "status": "running"}
+
+
+@app.get("/health")
+def health_check():
+    return {"status": "healthy"}

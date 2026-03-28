@@ -1,207 +1,118 @@
-from fastapi import APIRouter, HTTPException, status
-from bson import ObjectId
-from bson.errors import InvalidId
+from fastapi import APIRouter, HTTPException
+from typing import List
+from uuid import uuid4
 from datetime import datetime
+from db import member_collection, memory_members, DB_MODE
+from models import MemberCreate, MemberUpdate, MemberResponse
 
-from db import members_collection
-from models import MemberCreate, MemberUpdate
-
-router = APIRouter(
-    prefix="/api/members",
-    tags=["Members"]
-)
+router = APIRouter(prefix="/api/members", tags=["Members"])
 
 
-# ── Helper ──────────────────────────────────────────────
-def format_member(member) -> dict:
-    """Convert MongoDB document to JSON-friendly dict."""
-    member["id"] = str(member["_id"])
-    del member["_id"]
-    return member
+def using_mongo() -> bool:
+    return DB_MODE == "mongo" and member_collection is not None
 
 
-def valid_object_id(member_id: str):
-    """Validate MongoDB ObjectId format."""
-    try:
-        return ObjectId(member_id)
-    except (InvalidId, Exception):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid member ID format: {member_id}"
-        )
+def member_helper(member) -> dict:
+    return {
+        "id": str(member["_id"]),
+        "member_code": member["member_code"],
+        "full_name": member["full_name"],
+        "email": member["email"],
+        "phone": member["phone"],
+        "address": member["address"],
+        "membership_type": member["membership_type"],
+        "national_id": member["national_id"],
+        "status": member["status"],
+        "registered_at": member["registered_at"]
+    }
 
 
-# ── CREATE ───────────────────────────────────────────────
-@router.post(
-    "/",
-    status_code=status.HTTP_201_CREATED,
-    summary="Register a new library member"
-)
-def create_member(member: MemberCreate):
-    # Check if email already exists
-    existing = members_collection.find_one({"email": member.email})
-    if existing:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Email '{member.email}' is already registered"
-        )
-
-    # Check if national ID already exists
-    existing_nid = members_collection.find_one({"national_id": member.national_id})
-    if existing_nid:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"National ID '{member.national_id}' is already registered"
-        )
-
-    new_member = member.dict()
-    new_member["status"] = "active"
-    new_member["registered_at"] = datetime.now().isoformat()
-    new_member["updated_at"] = datetime.now().isoformat()
-
-    result = members_collection.insert_one(new_member)
-    created = members_collection.find_one({"_id": result.inserted_id})
-    return format_member(created)
-
-
-# ── READ ALL ─────────────────────────────────────────────
-@router.get(
-    "/",
-    summary="Get all members"
-)
+# ── GET ALL ───────────────────────────────────────────────
+@router.get("/", response_model=List[MemberResponse])
 def get_all_members():
-    members = list(members_collection.find())
-    return [format_member(m) for m in members]
+    if using_mongo():
+        return [member_helper(m) for m in member_collection.find()]
+    return [member_helper(m) for m in memory_members.values()]
 
 
-# ── READ BY STATUS ───────────────────────────────────────
-@router.get(
-    "/status/{status}",
-    summary="Get members by status (active / inactive / suspended)"
-)
-def get_members_by_status(status: str):
-    allowed = ["active", "inactive", "suspended"]
-    if status not in allowed:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Status must be one of {allowed}"
-        )
-    members = list(members_collection.find({"status": status}))
-    return [format_member(m) for m in members]
+# ── GET BY MEMBER CODE ────────────────────────────────────
+@router.get("/{member_code}", response_model=MemberResponse)
+def get_member(member_code: str):
+    if using_mongo():
+        member = member_collection.find_one({"member_code": member_code})
+    else:
+        member = next((m for m in memory_members.values() if m["member_code"] == member_code), None)
 
-
-# ── READ BY MEMBERSHIP TYPE ──────────────────────────────
-@router.get(
-    "/type/{membership_type}",
-    summary="Get members by type (student / teacher / public)"
-)
-def get_members_by_type(membership_type: str):
-    allowed = ["student", "teacher", "public"]
-    if membership_type not in allowed:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Membership type must be one of {allowed}"
-        )
-    members = list(members_collection.find({"membership_type": membership_type}))
-    return [format_member(m) for m in members]
-
-
-# ── READ ONE ─────────────────────────────────────────────
-@router.get(
-    "/{member_id}",
-    summary="Get a single member by ID"
-)
-def get_member(member_id: str):
-    oid = valid_object_id(member_id)
-    member = members_collection.find_one({"_id": oid})
     if not member:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Member with ID '{member_id}' not found"
-        )
-    return format_member(member)
-
-
-# ── UPDATE ───────────────────────────────────────────────
-@router.put(
-    "/{member_id}",
-    summary="Update member details"
-)
-def update_member(member_id: str, data: MemberUpdate):
-    oid = valid_object_id(member_id)
-
-    # Only update fields that were actually provided
-    update_data = {k: v for k, v in data.dict().items() if v is not None}
-
-    if not update_data:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="No fields provided to update"
-        )
-
-    update_data["updated_at"] = datetime.now().isoformat()
-
-    result = members_collection.update_one(
-        {"_id": oid},
-        {"$set": update_data}
-    )
-
-    if result.matched_count == 0:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Member with ID '{member_id}' not found"
-        )
-
-    updated = members_collection.find_one({"_id": oid})
-    return format_member(updated)
-
-
-# ── SUSPEND ──────────────────────────────────────────────
-@router.patch(
-    "/{member_id}/suspend",
-    summary="Suspend a member"
-)
-def suspend_member(member_id: str):
-    oid = valid_object_id(member_id)
-    result = members_collection.update_one(
-        {"_id": oid},
-        {"$set": {"status": "suspended", "updated_at": datetime.now().isoformat()}}
-    )
-    if result.matched_count == 0:
         raise HTTPException(status_code=404, detail="Member not found")
-    member = members_collection.find_one({"_id": oid})
-    return format_member(member)
+    return member_helper(member)
 
 
-# ── ACTIVATE ─────────────────────────────────────────────
-@router.patch(
-    "/{member_id}/activate",
-    summary="Activate or reactivate a member"
-)
-def activate_member(member_id: str):
-    oid = valid_object_id(member_id)
-    result = members_collection.update_one(
-        {"_id": oid},
-        {"$set": {"status": "active", "updated_at": datetime.now().isoformat()}}
-    )
-    if result.matched_count == 0:
+# ── CREATE ────────────────────────────────────────────────
+@router.post("/", response_model=MemberResponse, status_code=201)
+def create_member(member: MemberCreate):
+    member_dict = member.model_dump()
+    member_id = str(uuid4())
+    member_dict["_id"] = member_id
+    member_dict["registered_at"] = datetime.utcnow()
+
+    if using_mongo():
+        if member_collection.find_one({"email": member_dict["email"]}):
+            raise HTTPException(status_code=400, detail=f"Email '{member_dict['email']}' already registered")
+        if member_collection.find_one({"national_id": member_dict["national_id"]}):
+            raise HTTPException(status_code=400, detail=f"National ID '{member_dict['national_id']}' already registered")
+        if member_collection.find_one({"member_code": member_dict["member_code"]}):
+            raise HTTPException(status_code=400, detail=f"Member code '{member_dict['member_code']}' already exists")
+        member_collection.insert_one(member_dict)
+    else:
+        for m in memory_members.values():
+            if m["email"] == member_dict["email"]:
+                raise HTTPException(status_code=400, detail=f"Email '{member_dict['email']}' already registered")
+            if m["national_id"] == member_dict["national_id"]:
+                raise HTTPException(status_code=400, detail=f"National ID '{member_dict['national_id']}' already registered")
+            if m["member_code"] == member_dict["member_code"]:
+                raise HTTPException(status_code=400, detail=f"Member code '{member_dict['member_code']}' already exists")
+        memory_members[member_id] = member_dict
+
+    return member_helper(member_dict)
+
+
+# ── UPDATE BY MEMBER CODE ─────────────────────────────────
+@router.put("/{member_code}", response_model=MemberResponse)
+def update_member(member_code: str, member: MemberUpdate):
+    if using_mongo():
+        existing = member_collection.find_one({"member_code": member_code})
+    else:
+        existing = next((m for m in memory_members.values() if m["member_code"] == member_code), None)
+
+    if not existing:
         raise HTTPException(status_code=404, detail="Member not found")
-    member = members_collection.find_one({"_id": oid})
-    return format_member(member)
+
+    update_data = {k: v for k, v in member.model_dump().items() if v is not None}
+
+    if using_mongo():
+        if update_data:
+            member_collection.update_one({"member_code": member_code}, {"$set": update_data})
+        updated = member_collection.find_one({"member_code": member_code})
+        return member_helper(updated)
+
+    if update_data:
+        existing.update(update_data)
+    memory_members[existing["_id"]] = existing
+    return member_helper(existing)
 
 
-# ── DELETE ───────────────────────────────────────────────
-@router.delete(
-    "/{member_id}",
-    summary="Delete a member"
-)
-def delete_member(member_id: str):
-    oid = valid_object_id(member_id)
-    member = members_collection.find_one({"_id": oid})
-    if not member:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Member with ID '{member_id}' not found"
-        )
-    members_collection.delete_one({"_id": oid})
-    return {"message": f"Member '{member['full_name']}' deleted successfully"}
+# ── DELETE BY MEMBER CODE ─────────────────────────────────
+@router.delete("/{member_code}")
+def delete_member(member_code: str):
+    if using_mongo():
+        result = member_collection.delete_one({"member_code": member_code})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Member not found")
+        return {"message": "Member deleted successfully"}
+
+    existing = next((m for m in memory_members.values() if m["member_code"] == member_code), None)
+    if not existing:
+        raise HTTPException(status_code=404, detail="Member not found")
+    del memory_members[existing["_id"]]
+    return {"message": "Member deleted successfully"}

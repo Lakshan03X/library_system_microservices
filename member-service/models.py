@@ -1,32 +1,35 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, Field
 from typing import Optional
+from datetime import datetime
 from enum import Enum
 
 
 class MembershipType(str, Enum):
-    student = "student"
-    teacher = "teacher"
-    public = "public"
+    STUDENT = "student"
+    TEACHER = "teacher"
+    PUBLIC = "public"
 
 
 class MemberStatus(str, Enum):
-    active = "active"
-    inactive = "inactive"
-    suspended = "suspended"
+    ACTIVE = "active"
+    INACTIVE = "inactive"
+    SUSPENDED = "suspended"
 
 
-# Used when CREATING a new member (no id needed)
 class MemberCreate(BaseModel):
+    member_code: str  # e.g. "MEM001"
     full_name: str
     email: str
     phone: str
     address: str
     membership_type: MembershipType
     national_id: str
+    status: MemberStatus = MemberStatus.ACTIVE
 
     class Config:
         json_schema_extra = {
             "example": {
+                "member_code": "MEM001",
                 "full_name": "Kasun Perera",
                 "email": "kasun@gmail.com",
                 "phone": "0771234567",
@@ -37,7 +40,6 @@ class MemberCreate(BaseModel):
         }
 
 
-# Used when UPDATING a member (all fields optional)
 class MemberUpdate(BaseModel):
     full_name: Optional[str] = None
     email: Optional[str] = None
@@ -51,7 +53,19 @@ class MemberUpdate(BaseModel):
         json_schema_extra = {
             "example": {
                 "phone": "0779876543",
-                "address": "No 5, Kandy Road, Colombo 10",
-                "status": "active"
+                "address": "No 5, Kandy Road, Colombo 10"
             }
         }
+
+
+class MemberResponse(BaseModel):
+    id: str
+    member_code: str
+    full_name: str
+    email: str
+    phone: str
+    address: str
+    membership_type: MembershipType
+    national_id: str
+    status: MemberStatus
+    registered_at: datetime
