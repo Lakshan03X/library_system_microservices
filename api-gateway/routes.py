@@ -1,6 +1,6 @@
 import os
 import requests
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -14,6 +14,25 @@ BORROW_SERVICE = os.getenv("BORROW_SERVICE")
 REVIEW_SERVICE = os.getenv("REVIEW_SERVICE")
 STAFF_SERVICE = os.getenv("STAFF_SERVICE")
 RESERVATION_SERVICE = os.getenv("RESERVATION_SERVICE")
+
+
+def _safe_forward(method: str, url: str, payload: dict | None = None):
+    try:
+        resp = requests.request(method=method, url=url, json=payload, timeout=10)
+    except requests.RequestException as exc:
+        raise HTTPException(status_code=502, detail=f"Upstream service unavailable: {exc}")
+
+    content_type = (resp.headers.get("content-type") or "").lower()
+    if "application/json" in content_type:
+        body = resp.json()
+    else:
+        body = {"detail": resp.text or "Upstream service returned non-JSON response"}
+
+    if resp.status_code >= 400:
+        detail = body.get("detail") if isinstance(body, dict) else body
+        raise HTTPException(status_code=resp.status_code, detail=detail)
+
+    return body
 
 
 # --------------- BOOK SERVICE ROUTES ---------------
@@ -63,23 +82,19 @@ def delete_member(member_id: str):
 # --------------- BORROW SERVICE ROUTES ---------------
 @router.get("/borrows")
 def get_borrows():
-    resp = requests.get(f"{BORROW_SERVICE}/borrows")
-    return resp.json()
+    return _safe_forward("GET", f"{BORROW_SERVICE}/borrows")
 
 @router.post("/borrows")
 def create_borrow(payload: dict):
-    resp = requests.post(f"{BORROW_SERVICE}/borrows", json=payload)
-    return resp.json()
+    return _safe_forward("POST", f"{BORROW_SERVICE}/borrows", payload)
 
 @router.put("/borrows/{borrow_id}")
 def update_borrow(borrow_id: str, payload: dict):
-    resp = requests.put(f"{BORROW_SERVICE}/borrows/{borrow_id}", json=payload)
-    return resp.json()
+    return _safe_forward("PUT", f"{BORROW_SERVICE}/borrows/{borrow_id}", payload)
 
 @router.delete("/borrows/{borrow_id}")
 def delete_borrow(borrow_id: str):
-    resp = requests.delete(f"{BORROW_SERVICE}/borrows/{borrow_id}")
-    return resp.json()
+    return _safe_forward("DELETE", f"{BORROW_SERVICE}/borrows/{borrow_id}")
 
 
 # --------------- REVIEW SERVICE ROUTES ---------------
