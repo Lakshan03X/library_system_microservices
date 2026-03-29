@@ -1,0 +1,20 @@
+{
+  "staff_id": "S101",
+  "name": "Amal Silva",
+  "email": "amal.silva@example.com",
+  "role": "librarian"
+}
+
+{
+  "staff_id": "S102",
+  "name": "Kavindi Jayasinghe",
+  "email": "kavindi.jayasinghe@example.com",
+  "role": "assistant"
+}
+
+{
+  "staff_id": "S103",
+  "name": "Ruwan Fernando",
+  "email": "ruwan.fernando@example.com",
+  "role": "manager"
+}

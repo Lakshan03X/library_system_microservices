@@ -1,0 +1,35 @@
+{
+  "member_id": "1",
+  "full_name": "John Doe",
+  "email": "john.doe@example.com",
+  "phone": "1234567890",
+  "address": "12/2 Main Street",
+  "membership_type": "standard",
+  "national_id": "987654321V",
+  "status": "active",
+  "registered_at": "2026-03-29T17:30:00.000Z"
+}
+
+{
+  "member_id": "2",
+  "full_name": "Member 123",
+  "email": "member123@example.com",
+  "phone": 1234567890,
+  "address": "malabe, sri lanka",
+  "membership_type": "basic",
+  "national_id": 123456789,
+  "status": "active",
+  "registered_at": "2026-03-29T17:30:00.000Z"
+}
+
+{
+  "member_id": "3",
+  "full_name": "Jane Smith",
+  "email": "jane.smith@example.com",
+  "phone": "0712345678",
+  "address": "45 Lake Road, Colombo",
+  "membership_type": "premium",
+  "national_id": "199012345678",
+  "status": "inactive",
+  "registered_at": "2026-02-15T09:15:00.000Z"
+}

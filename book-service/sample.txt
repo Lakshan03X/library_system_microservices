@@ -1,36 +1,44 @@
 {
-  "book_id": 1,
-  "title": "To Kill a Mockingbird",
-  "authorId": 101,
-  "genreId": 3,
-  "publishedYear": 1960,
-  "copiesAvailable": 5
+    "book_id": "BK001",
+    "title": "The Great Gatsby",
+    "authorId": 1,
+    "authorName": "F. Scott Fitzgerald",
+    "genreCategory": "Classic Fiction",
+    "publishedYear": 1925,
+    "copiesAvailable": 5
 }
 
-{
-  "book_id": 2,
-  "title": "Dune",
-  "authorId": 102,
-  "genreId": 7,
-  "publishedYear": 1965,
-  "copiesAvailable": 3
-}
-
-{
-  "book_id": 3,
-  "title": "The Name of the Wind",
-  "authorId": 103,
-  "genreId": 2,
-  "publishedYear": 2007,
-  "copiesAvailable": 8
-}
+  {
+    "book_id": "BK002",
+    "title": "To Kill a Mockingbird",
+    "authorId": 2,
+    "authorName": "Harper Lee",
+    "genreCategory": "Historical Fiction",
+    "publishedYear": 1960,
+    "copiesAvailable": 3
+  }
 
 
-{
-  "book_id": 4,
-  "title": "Atomic Habits",
-  "authorId": 105,
-  "genreId": 10,
-  "publishedYear": 2018,
-  "copiesAvailable": 0
-}
+  {
+    "book_id": "BK003",
+    "title": "1984",
+    "authorId": 3,
+    "authorName": "George Orwell",
+    "genreCategory": "Dystopian Fiction",
+    "publishedYear": 1949,
+    "copiesAvailable": 7
+  }
+
+
+  {
+    "book_id": "BK004",
+    "title": "Harry Potter and the Philosopher's Stone",
+    "authorId": 4,
+    "authorName": "J.K. Rowling",
+    "genreCategory": "Fantasy",
+    "publishedYear": 1997,
+    "copiesAvailable": 10
+  }
+
+
+  

@@ -1,0 +1,33 @@
+{
+  "book_id": "B001",
+  "member_id": "M123",
+  "reserved_date": "2026-03-29T17:19:31.218Z",
+  "expiry_date": "2026-04-02T17:19:31.218Z",
+  "status": "pending"
+}
+
+
+{
+  "book_id": "B002",
+  "member_id": "M456",
+  "reserved_date": "2026-03-28T10:00:00.000Z",
+  "expiry_date": "2026-04-01T10:00:00.000Z",
+  "status": "confirmed"
+}
+
+
+{
+  "book_id": "B003",
+  "member_id": "M789",
+  "reserved_date": "2026-03-25T08:30:00.000Z",
+  "expiry_date": "2026-03-30T08:30:00.000Z",
+  "status": "cancelled"
+}
+
+{
+  "book_id": "B004",
+  "member_id": "M321",
+  "reserved_date": "2026-03-20T12:00:00.000Z",
+  "expiry_date": "2026-03-25T12:00:00.000Z",
+  "status": "expired"
+}

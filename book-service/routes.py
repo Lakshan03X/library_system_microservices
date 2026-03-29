@@ -17,7 +17,8 @@ def book_helper(book: dict) -> dict:
         "book_id": book["book_id"],
         "title": book["title"],
         "authorId": book["authorId"],
-        "genreId": book["genreId"],
+        "authorName": book["authorName"],
+        "genreCategory": book["genreCategory"],
         "publishedYear": book["publishedYear"],
         "copiesAvailable": book["copiesAvailable"],
     }

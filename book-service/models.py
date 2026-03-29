@@ -6,7 +6,8 @@ class BookCreate(BaseModel):
     book_id: str
     title: str
     authorId: int
-    genreId: int
+    authorName: str
+    genreCategory: str
     publishedYear: int
     copiesAvailable: int = 1
 
@@ -14,7 +15,8 @@ class BookCreate(BaseModel):
 class BookUpdate(BaseModel):
     title: Optional[str] = None
     authorId: Optional[int] = None
-    genreId: Optional[int] = None
+    authorName: Optional[str] = None
+    genreCategory: Optional[str] = None
     publishedYear: Optional[int] = None
     copiesAvailable: Optional[int] = None
 
@@ -26,6 +28,7 @@ class BookResponse(BaseModel):
     book_id: str
     title: str
     authorId: int
-    genreId: int
+    authorName: str
+    genreCategory: str
     publishedYear: int
     copiesAvailable: int

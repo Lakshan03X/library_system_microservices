@@ -1,7 +1,7 @@
 from datetime import datetime
 from enum import Enum
 import os
-from typing import Optional
+from typing import List, Optional
 from pydantic import BaseModel, Field
 import requests
 from fastapi import APIRouter, HTTPException
@@ -39,29 +39,66 @@ def _safe_forward(method: str, url: str, payload: dict | None = None):
     return body
 
 
+# ===============================================================
+# BOOK MODELS
+# ===============================================================
+# --------------- BOOK SERVICE ROUTES ---------------
+class BookCreate(BaseModel):
+    book_id: str
+    title: str
+    authorId: int
+    authorName: str
+    genreCategory: str
+    publishedYear: int
+    copiesAvailable: int = 1
+
+
+class BookUpdate(BaseModel):
+    title: Optional[str] = None
+    authorId: Optional[int] = None
+    authorName: Optional[str] = None
+    genreCategory: Optional[str] = None
+    publishedYear: Optional[int] = None
+    copiesAvailable: Optional[int] = None
+
+
+class BookResponse(BaseModel):
+    model_config = {"populate_by_name": True}
+
+    id: str
+    book_id: str
+    title: str
+    authorId: int
+    authorName: str
+    genreCategory: str
+    publishedYear: int
+    copiesAvailable: int
+
+
 # --------------- BOOK SERVICE ROUTES ---------------
 @router.get("/books")
 def get_books():
-    resp = requests.get(f"{BOOK_SERVICE}/books")
-    return resp.json()
+    return _safe_forward("GET", f"{BOOK_SERVICE}/books")
 
-@router.post("/books")
-def create_book(payload: dict):
-    resp = requests.post(f"{BOOK_SERVICE}/books", json=payload)
-    return resp.json()
+@router.get("/books/{book_id}")
+def get_book(book_id: str):
+    return _safe_forward("GET", f"{BOOK_SERVICE}/books/{book_id}")
+
+@router.post("/books", status_code=201)
+def create_book(payload: BookCreate):
+    return _safe_forward("POST", f"{BOOK_SERVICE}/books", payload.model_dump(mode="json"))
 
 @router.put("/books/{book_id}")
-def update_book(book_id: str, payload: dict):
-    resp = requests.put(f"{BOOK_SERVICE}/books/{book_id}", json=payload)
-    return resp.json()
+def update_book(book_id: str, payload: BookUpdate):
+    return _safe_forward("PUT", f"{BOOK_SERVICE}/books/{book_id}", payload.model_dump(mode="json", exclude_unset=True))
 
 @router.delete("/books/{book_id}")
 def delete_book(book_id: str):
-    resp = requests.delete(f"{BOOK_SERVICE}/books/{book_id}")
-    return resp.json()
+    return _safe_forward("DELETE", f"{BOOK_SERVICE}/books/{book_id}")
 
-
-# Add these models at the top with other models
+# ===============================================================
+# MEMBER MODELS
+# ===============================================================
 class MemberCreate(BaseModel):
     member_id: str
     full_name: str
@@ -75,7 +112,7 @@ class MemberCreate(BaseModel):
     class Config:
         json_schema_extra = {
             "example": {
-                "member_id": "1",
+                "member_id": "MEM001",
                 "full_name": "Kasun Perera",
                 "email": "kasun@gmail.com",
                 "phone": "0771234567",
@@ -87,7 +124,6 @@ class MemberCreate(BaseModel):
 
 
 class MemberUpdate(BaseModel):
-    member_id: Optional[str] = None
     full_name: Optional[str] = None
     email: Optional[str] = None
     phone: Optional[str] = None
@@ -99,7 +135,6 @@ class MemberUpdate(BaseModel):
     class Config:
         json_schema_extra = {
             "example": {
-                "member_id": "1",
                 "full_name": "Kasun Perera",
                 "email": "kasun@gmail.com",
                 "phone": "0771234567",
@@ -109,26 +144,109 @@ class MemberUpdate(BaseModel):
             }
         }
 
+
 # --------------- MEMBER SERVICE ROUTES ---------------
 @router.get("/members")
 def get_members():
-    resp = requests.get(f"{MEMBER_SERVICE}/members")
-    return resp.json()
+    return _safe_forward("GET", f"{MEMBER_SERVICE}/api/members/")
 
-@router.post("/members")
+@router.get("/members/{member_id}")
+def get_member(member_id: str):
+    return _safe_forward("GET", f"{MEMBER_SERVICE}/api/members/{member_id}")
+
+@router.post("/members", status_code=201)
 def create_member(payload: MemberCreate):
-    resp = requests.post(f"{MEMBER_SERVICE}/members", json=payload.model_dump())
-    return resp.json()
+    return _safe_forward("POST", f"{MEMBER_SERVICE}/api/members/", payload.model_dump())
 
 @router.put("/members/{member_id}")
 def update_member(member_id: str, payload: MemberUpdate):
-    resp = requests.put(f"{MEMBER_SERVICE}/members/{member_id}", json=payload.model_dump(exclude_unset=True))
-    return resp.json()
+    return _safe_forward("PUT", f"{MEMBER_SERVICE}/api/members/{member_id}", payload.model_dump(exclude_unset=True))
 
 @router.delete("/members/{member_id}")
 def delete_member(member_id: str):
-    resp = requests.delete(f"{MEMBER_SERVICE}/members/{member_id}")
-    return resp.json()
+    return _safe_forward("DELETE", f"{MEMBER_SERVICE}/api/members/{member_id}")
+
+
+# ===============================================================
+# STAFF MODELS
+# ===============================================================
+class StaffCreate(BaseModel):
+    staff_id: str
+    name: str
+    email: str
+    role: str
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "staff_id": "STF001",
+                "name": "Nimal Silva",
+                "email": "nimal@library.com",
+                "role": "librarian"
+            }
+        }
+
+
+class StaffUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[str] = None
+    role: Optional[str] = None
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "name": "Nimal Silva",
+                "email": "nimal@library.com",
+                "role": "librarian"
+            }
+        }
+
+
+# --------------- STAFF SERVICE ROUTES ---------------
+@router.get("/staff")
+def get_staff():
+    return _safe_forward("GET", f"{STAFF_SERVICE}/staffs/")
+
+@router.get("/staff/{staff_id}")
+def get_staff_by_id(staff_id: str):
+    return _safe_forward("GET", f"{STAFF_SERVICE}/staffs/{staff_id}")
+
+@router.post("/staff", status_code=201)
+def create_staff(payload: StaffCreate):
+    return _safe_forward("POST", f"{STAFF_SERVICE}/staffs/", payload.model_dump())
+
+@router.put("/staff/{staff_id}")
+def update_staff(staff_id: str, payload: StaffUpdate):
+    return _safe_forward("PUT", f"{STAFF_SERVICE}/staffs/{staff_id}", payload.model_dump(exclude_unset=True))
+
+@router.delete("/staff/{staff_id}")
+def delete_staff(staff_id: str):
+    return _safe_forward("DELETE", f"{STAFF_SERVICE}/staffs/{staff_id}")
+
+
+# ===============================================================
+# BORROW SERVICE ROUTES
+# ===============================================================
+class BorrowStatus(str, Enum):
+    BORROWED = "borrowed"
+    RETURNED = "returned"
+    OVERDUE = "overdue"
+
+class BorrowCreate(BaseModel):
+    book_id: List[str]
+    member_id: str
+    borrow_date: datetime = Field(default_factory=datetime.utcnow)
+    due_date: datetime
+    status: BorrowStatus = BorrowStatus.BORROWED
+
+
+class BorrowUpdate(BaseModel):
+    book_id: Optional[List[str]] = None
+    member_id: Optional[str] = None
+    borrow_date: Optional[datetime] = None
+    due_date: Optional[datetime] = None
+    return_date: Optional[datetime] = None
+    status: Optional[BorrowStatus] = None
 
 
 # --------------- BORROW SERVICE ROUTES ---------------
@@ -153,12 +271,12 @@ def get_borrow(borrow_id: str):
     return _safe_forward("GET", f"{BORROW_SERVICE}/borrows/{borrow_id}")
 
 @router.post("/borrows")
-def create_borrow(payload: dict):
-    return _safe_forward("POST", f"{BORROW_SERVICE}/borrows/", payload)
+def create_borrow(payload: BorrowCreate):
+    return _safe_forward("POST", f"{BORROW_SERVICE}/borrows/", payload.model_dump(mode="json"))
 
 @router.put("/borrows/{borrow_id}")
-def update_borrow(borrow_id: str, payload: dict):
-    return _safe_forward("PUT", f"{BORROW_SERVICE}/borrows/{borrow_id}", payload)
+def update_borrow(borrow_id: str, payload: BorrowUpdate):
+    return _safe_forward("PUT", f"{BORROW_SERVICE}/borrows/{borrow_id}", payload.model_dump(mode="json", exclude_unset=True))
 
 @router.delete("/borrows/{borrow_id}")
 def delete_borrow(borrow_id: str):
@@ -172,67 +290,66 @@ def return_book(borrow_id: str):
 def mark_overdue(borrow_id: str):
     return _safe_forward("PUT", f"{BORROW_SERVICE}/borrows/{borrow_id}/overdue")
 
+
+# ===============================================================
+# REVIEW SERVICE ROUTES
+# ===============================================================
+class ReviewCreate(BaseModel):
+    book_id: str
+    member_id: str
+    rating: int = Field(..., ge=1, le=5)
+    comment: Optional[str] = None
+    review_date: datetime = Field(default_factory=datetime.utcnow)
+
+
+class ReviewUpdate(BaseModel):
+    rating: Optional[int] = Field(None, ge=1, le=5)
+    comment: Optional[str] = None
+    review_date: Optional[datetime] = None
+
+
+class ReviewResponse(BaseModel):
+    id: str
+    book_id: str
+    member_id: str
+    rating: int
+    comment: Optional[str] = None
+    review_date: datetime
+
+
 # --------------- REVIEW SERVICE ROUTES ---------------
 @router.get("/reviews")
 def get_all_reviews():
-    resp = requests.get(f"{REVIEW_SERVICE}/reviews/")
-    return resp.json()
+    return _safe_forward("GET", f"{REVIEW_SERVICE}/reviews/")
 
 @router.get("/reviews/book/{book_id}")
 def get_reviews_by_book(book_id: str):
-    resp = requests.get(f"{REVIEW_SERVICE}/reviews/book/{book_id}")
-    return resp.json()
+    return _safe_forward("GET", f"{REVIEW_SERVICE}/reviews/book/{book_id}")
 
 @router.get("/reviews/member/{member_id}")
 def get_reviews_by_member(member_id: str):
-    resp = requests.get(f"{REVIEW_SERVICE}/reviews/member/{member_id}")
-    return resp.json()
+    return _safe_forward("GET", f"{REVIEW_SERVICE}/reviews/member/{member_id}")
 
 @router.get("/reviews/{review_id}")
 def get_review(review_id: str):
-    resp = requests.get(f"{REVIEW_SERVICE}/reviews/{review_id}")
-    return resp.json()
+    return _safe_forward("GET", f"{REVIEW_SERVICE}/reviews/{review_id}")
 
 @router.post("/reviews")
-def create_review(payload: dict):
-    resp = requests.post(f"{REVIEW_SERVICE}/reviews/", json=payload)
-    return resp.json()
+def create_review(payload: ReviewCreate):
+    return _safe_forward("POST", f"{REVIEW_SERVICE}/reviews/", payload.model_dump(mode="json"))
 
 @router.put("/reviews/{review_id}")
-def update_review(review_id: str, payload: dict):
-    resp = requests.put(f"{REVIEW_SERVICE}/reviews/{review_id}", json=payload)
-    return resp.json()
+def update_review(review_id: str, payload: ReviewUpdate):
+    return _safe_forward("PUT", f"{REVIEW_SERVICE}/reviews/{review_id}", payload.model_dump(mode="json", exclude_unset=True))
 
 @router.delete("/reviews/{review_id}")
 def delete_review(review_id: str):
-    resp = requests.delete(f"{REVIEW_SERVICE}/reviews/{review_id}")
-    return resp.json()
+    return _safe_forward("DELETE", f"{REVIEW_SERVICE}/reviews/{review_id}")
 
 
-# --------------- STAFF SERVICE ROUTES ---------------
-@router.get("/staff")
-def get_staff():
-    resp = requests.get(f"{STAFF_SERVICE}/staff")
-    return resp.json()
-
-@router.post("/staff")
-def create_staff(payload: dict):
-    resp = requests.post(f"{STAFF_SERVICE}/staff", json=payload)
-    return resp.json()
-
-@router.put("/staff/{staff_id}")
-def update_staff(staff_id: str, payload: dict):
-    resp = requests.put(f"{STAFF_SERVICE}/staff/{staff_id}", json=payload)
-    return resp.json()
-
-@router.delete("/staff/{staff_id}")
-def delete_staff(staff_id: str):
-    resp = requests.delete(f"{STAFF_SERVICE}/staff/{staff_id}")
-    return resp.json()
-
-# ---------------- ROUTES ----------------
-
-# ---------------- ENUM ----------------
+# ===============================================================
+# RESERVATION MODELS
+# ===============================================================
 class ReservationStatus(str, Enum):
     PENDING = "pending"
     CONFIRMED = "confirmed"
@@ -240,7 +357,6 @@ class ReservationStatus(str, Enum):
     EXPIRED = "expired"
 
 
-# ---------------- SCHEMAS ----------------
 class ReservationCreate(BaseModel):
     book_id: str
     member_id: str
@@ -258,39 +374,23 @@ class ReservationUpdate(BaseModel):
     status: Optional[ReservationStatus] = None
 
 
+# --------------- RESERVATION SERVICE ROUTES ---------------
 @router.get("/reservations")
 def get_reservations():
-    resp = requests.get(f"{RESERVATION_SERVICE}/reservations")
-    return resp.json()
+    return _safe_forward("GET", f"{RESERVATION_SERVICE}/reservations")
 
+@router.get("/reservations/{reservation_id}")
+def get_reservation(reservation_id: str):
+    return _safe_forward("GET", f"{RESERVATION_SERVICE}/reservations/{reservation_id}")
 
 @router.post("/reservations")
 def create_reservation(payload: ReservationCreate):
-    # ✅ FIX: convert datetime → JSON-safe ISO strings
-    data = payload.model_dump(mode="json")
-
-    resp = requests.post(
-        f"{RESERVATION_SERVICE}/reservations",
-        json=data
-    )
-
-    return resp.json()
-
+    return _safe_forward("POST", f"{RESERVATION_SERVICE}/reservations", payload.model_dump(mode="json"))
 
 @router.put("/reservations/{reservation_id}")
 def update_reservation(reservation_id: str, payload: ReservationUpdate):
-    # ✅ FIX: only send updated fields + JSON safe format
-    data = payload.model_dump(mode="json", exclude_unset=True)
-
-    resp = requests.put(
-        f"{RESERVATION_SERVICE}/reservations/{reservation_id}",
-        json=data
-    )
-
-    return resp.json()
-
+    return _safe_forward("PUT", f"{RESERVATION_SERVICE}/reservations/{reservation_id}", payload.model_dump(mode="json", exclude_unset=True))
 
 @router.delete("/reservations/{reservation_id}")
 def delete_reservation(reservation_id: str):
-    resp = requests.delete(f"{RESERVATION_SERVICE}/reservations/{reservation_id}")
-    return resp.json()
+    return _safe_forward("DELETE", f"{RESERVATION_SERVICE}/reservations/{reservation_id}")
