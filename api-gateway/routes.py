@@ -1,4 +1,8 @@
+from datetime import datetime
+from enum import Enum
 import os
+from typing import Optional
+from pydantic import BaseModel, Field
 import requests
 from fastapi import APIRouter, HTTPException
 from dotenv import load_dotenv
@@ -140,22 +144,65 @@ def delete_staff(staff_id: str):
     resp = requests.delete(f"{STAFF_SERVICE}/staff/{staff_id}")
     return resp.json()
 
+# ---------------- ROUTES ----------------
 
-# --------------- RESERVATION SERVICE ROUTES ---------------
+# ---------------- ENUM ----------------
+class ReservationStatus(str, Enum):
+    PENDING = "pending"
+    CONFIRMED = "confirmed"
+    CANCELLED = "cancelled"
+    EXPIRED = "expired"
+
+
+# ---------------- SCHEMAS ----------------
+class ReservationCreate(BaseModel):
+    book_id: str
+    member_id: str
+    reserved_date: datetime = Field(default_factory=datetime.utcnow)
+    expiry_date: datetime
+    status: ReservationStatus = ReservationStatus.PENDING
+
+
+class ReservationUpdate(BaseModel):
+    book_id: Optional[str] = None
+    member_id: Optional[str] = None
+    reserved_date: Optional[datetime] = None
+    expiry_date: Optional[datetime] = None
+    confirmed_date: Optional[datetime] = None
+    status: Optional[ReservationStatus] = None
+
+
 @router.get("/reservations")
 def get_reservations():
     resp = requests.get(f"{RESERVATION_SERVICE}/reservations")
     return resp.json()
 
+
 @router.post("/reservations")
-def create_reservation(payload: dict):
-    resp = requests.post(f"{RESERVATION_SERVICE}/reservations", json=payload)
+def create_reservation(payload: ReservationCreate):
+    # ✅ FIX: convert datetime → JSON-safe ISO strings
+    data = payload.model_dump(mode="json")
+
+    resp = requests.post(
+        f"{RESERVATION_SERVICE}/reservations",
+        json=data
+    )
+
     return resp.json()
 
+
 @router.put("/reservations/{reservation_id}")
-def update_reservation(reservation_id: str, payload: dict):
-    resp = requests.put(f"{RESERVATION_SERVICE}/reservations/{reservation_id}", json=payload)
+def update_reservation(reservation_id: str, payload: ReservationUpdate):
+    # ✅ FIX: only send updated fields + JSON safe format
+    data = payload.model_dump(mode="json", exclude_unset=True)
+
+    resp = requests.put(
+        f"{RESERVATION_SERVICE}/reservations/{reservation_id}",
+        json=data
+    )
+
     return resp.json()
+
 
 @router.delete("/reservations/{reservation_id}")
 def delete_reservation(reservation_id: str):
