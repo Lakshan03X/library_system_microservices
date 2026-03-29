@@ -1,0 +1,36 @@
+{
+  "book_id": 1,
+  "title": "To Kill a Mockingbird",
+  "authorId": 101,
+  "genreId": 3,
+  "publishedYear": 1960,
+  "copiesAvailable": 5
+}
+
+{
+  "book_id": 2,
+  "title": "Dune",
+  "authorId": 102,
+  "genreId": 7,
+  "publishedYear": 1965,
+  "copiesAvailable": 3
+}
+
+{
+  "book_id": 3,
+  "title": "The Name of the Wind",
+  "authorId": 103,
+  "genreId": 2,
+  "publishedYear": 2007,
+  "copiesAvailable": 8
+}
+
+
+{
+  "book_id": 4,
+  "title": "Atomic Habits",
+  "authorId": 105,
+  "genreId": 10,
+  "publishedYear": 2018,
+  "copiesAvailable": 0
+}
