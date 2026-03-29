@@ -135,12 +135,10 @@ class MemberUpdate(BaseModel):
     class Config:
         json_schema_extra = {
             "example": {
-                "full_name": "Kasun Perera",
+                
                 "email": "kasun@gmail.com",
                 "phone": "0771234567",
-                "address": "No 12, Galle Road, Colombo 03",
-                "membership_type": "student",
-                "national_id": "200012345678"
+                
             }
         }
 
