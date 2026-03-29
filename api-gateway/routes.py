@@ -61,6 +61,54 @@ def delete_book(book_id: str):
     return resp.json()
 
 
+# Add these models at the top with other models
+class MemberCreate(BaseModel):
+    member_id: str
+    full_name: str
+    email: str
+    phone: str
+    address: str
+    membership_type: str
+    national_id: str
+    status: str = "active"
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "member_id": "1",
+                "full_name": "Kasun Perera",
+                "email": "kasun@gmail.com",
+                "phone": "0771234567",
+                "address": "No 12, Galle Road, Colombo 03",
+                "membership_type": "student",
+                "national_id": "200012345678"
+            }
+        }
+
+
+class MemberUpdate(BaseModel):
+    member_id: Optional[str] = None
+    full_name: Optional[str] = None
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    address: Optional[str] = None
+    membership_type: Optional[str] = None
+    national_id: Optional[str] = None
+    status: Optional[str] = None
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "member_id": "1",
+                "full_name": "Kasun Perera",
+                "email": "kasun@gmail.com",
+                "phone": "0771234567",
+                "address": "No 12, Galle Road, Colombo 03",
+                "membership_type": "student",
+                "national_id": "200012345678"
+            }
+        }
+
 # --------------- MEMBER SERVICE ROUTES ---------------
 @router.get("/members")
 def get_members():
@@ -68,13 +116,13 @@ def get_members():
     return resp.json()
 
 @router.post("/members")
-def create_member(payload: dict):
-    resp = requests.post(f"{MEMBER_SERVICE}/members", json=payload)
+def create_member(payload: MemberCreate):
+    resp = requests.post(f"{MEMBER_SERVICE}/members", json=payload.model_dump())
     return resp.json()
 
 @router.put("/members/{member_id}")
-def update_member(member_id: str, payload: dict):
-    resp = requests.put(f"{MEMBER_SERVICE}/members/{member_id}", json=payload)
+def update_member(member_id: str, payload: MemberUpdate):
+    resp = requests.put(f"{MEMBER_SERVICE}/members/{member_id}", json=payload.model_dump(exclude_unset=True))
     return resp.json()
 
 @router.delete("/members/{member_id}")

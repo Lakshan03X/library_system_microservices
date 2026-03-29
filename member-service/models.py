@@ -17,7 +17,7 @@ class MemberStatus(str, Enum):
 
 
 class MemberCreate(BaseModel):
-    member_code: str  # e.g. "MEM001"
+    member_id: str  # e.g. "MEM001"
     full_name: str
     email: str
     phone: str
@@ -29,7 +29,7 @@ class MemberCreate(BaseModel):
     class Config:
         json_schema_extra = {
             "example": {
-                "member_code": "MEM001",
+                "member_id": "1",
                 "full_name": "Kasun Perera",
                 "email": "kasun@gmail.com",
                 "phone": "0771234567",
@@ -52,15 +52,20 @@ class MemberUpdate(BaseModel):
     class Config:
         json_schema_extra = {
             "example": {
-                "phone": "0779876543",
-                "address": "No 5, Kandy Road, Colombo 10"
+                "member_id": "1",
+                "full_name": "Kasun Perera",
+                "email": "kasun@gmail.com",
+                "phone": "0771234567",
+                "address": "No 12, Galle Road, Colombo 03",
+                "membership_type": "student",
+                "national_id": "200012345678"
             }
         }
 
 
 class MemberResponse(BaseModel):
     id: str
-    member_code: str
+    member_id: str
     full_name: str
     email: str
     phone: str
