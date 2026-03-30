@@ -231,6 +231,7 @@ class BorrowStatus(str, Enum):
     OVERDUE = "overdue"
 
 class BorrowCreate(BaseModel):
+    borrow_id: str
     book_id: List[str]
     member_id: str
     borrow_date: datetime = Field(default_factory=datetime.utcnow)

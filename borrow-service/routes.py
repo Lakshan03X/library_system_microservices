@@ -43,8 +43,15 @@ def get_borrows_by_member(member_id: str):
 @router.get("/book/{book_id}", response_model=List[BorrowResponse])
 def get_borrows_by_book(book_id: str):
     if using_mongo():
-        return [borrow_helper(borrow) for borrow in borrow_collection.find({"book_id": book_id})]
+        return [borrow_helper(borrow) for borrow in borrow_collection.find({"book_id": {"$in": [book_id]}})]
     return [borrow_helper(borrow) for borrow in memory_borrows.values() if book_id in borrow["book_id"]]
+
+
+@router.get("/status/overdue", response_model=List[BorrowResponse])
+def get_overdue_borrows():
+    if using_mongo():
+        return [borrow_helper(borrow) for borrow in borrow_collection.find({"status": "overdue"})]
+    return [borrow_helper(borrow) for borrow in memory_borrows.values() if borrow["status"] == "overdue"]
 
 
 @router.get("/{borrow_id}", response_model=BorrowResponse)

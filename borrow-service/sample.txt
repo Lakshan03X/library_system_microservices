@@ -31,5 +31,16 @@
   "status": "borrowed"
 }
 
+{
+  "borrow_id": "BW04",
+  "book_id": [
+    "Book11","Book22","Book33"
+  ],
+  "member_id": "M04",
+  "borrow_date": "2026-04-08T13:05:13.565Z",
+  "due_date": "2026-04-12T13:05:13.565Z",
+  "status": "borrowed"
+}
+
 
 
