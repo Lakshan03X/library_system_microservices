@@ -16,33 +16,6 @@ This system consists of the following microservices:
 | Staff Service       | 8085 | Manages library staff                |
 | Reservation Service | 8086 | Handles book reservations            |
 
-## Service Communication
-
-```
-                              ┌──────────────────┐
-                              │   API Gateway    │
-                              │   (Port 8080)    │
-                              └────────┬─────────┘
-                                       │
-       ┌───────────┬───────────┬───────┼───────┬───────────┬───────────┐
-       │           │           │       │       │           │           │
-       ▼           ▼           ▼       ▼       ▼           ▼           ▼
-┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐
-│  Book    │ │  Member  │ │  Borrow  │ │  Review  │ │  Staff   │ │Reservation│
-│ Service  │ │ Service  │ │ Service  │ │ Service  │ │ Service  │ │ Service   │
-│  (8081)  │ │  (8082)  │ │  (8083)  │ │  (8084)  │ │  (8085)  │ │  (8086)   │
-└────┬─────┘ └────┬─────┘ └────┬─────┘ └────┬─────┘ └──────────┘ └────┬─────┘
-     │            │            │            │                         │
-     │            │            │            │                         │
-     └────────────┴────────────┴────────────┴─────────────────────────┘
-                               │
-                               ▼
-                        ┌──────────────┐
-                        │   MongoDB    │
-                        │ (library_db) │
-                        └──────────────┘
-```
-
 ### Inter-Service Validation
 
 The following services validate data against other services before creating records:
