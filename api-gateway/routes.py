@@ -138,6 +138,7 @@ class MemberUpdate(BaseModel):
                 
                 "email": "kasun@gmail.com",
                 "phone": "0771234567",
+                "address": "No 12, Galle Road, Colombo 03",
                 
             }
         }
