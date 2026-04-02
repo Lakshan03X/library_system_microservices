@@ -2,14 +2,41 @@ from fastapi import APIRouter, HTTPException
 from datetime import datetime
 from typing import List
 from uuid import uuid4
+import os
+import requests
+from dotenv import load_dotenv
 from db import reservation_collection, memory_reservations, DB_MODE
 from models import ReservationCreate, ReservationUpdate, ReservationOut
 
+load_dotenv()
+
 router = APIRouter(prefix="/reservations", tags=["Reservations"])
+
+# Service URLs for validation
+BOOK_SERVICE = os.getenv("BOOK_SERVICE", "http://localhost:8081")
+MEMBER_SERVICE = os.getenv("MEMBER_SERVICE", "http://localhost:8082")
 
 
 def using_mongo() -> bool:
     return DB_MODE == "mongo" and reservation_collection is not None
+
+
+def validate_book_exists(book_id: str) -> bool:
+    """Validate that a book exists in the book service."""
+    try:
+        resp = requests.get(f"{BOOK_SERVICE}/books/{book_id}", timeout=5)
+        return resp.status_code == 200
+    except requests.RequestException:
+        return False
+
+
+def validate_member_exists(member_id: str) -> bool:
+    """Validate that a member exists in the member service."""
+    try:
+        resp = requests.get(f"{MEMBER_SERVICE}/api/members/{member_id}", timeout=5)
+        return resp.status_code == 200
+    except requests.RequestException:
+        return False
 
 
 def reservation_helper(reservation) -> dict:
@@ -60,6 +87,14 @@ def get_reservation(reservation_id: str):
 
 @router.post("/", response_model=ReservationOut)
 def create_reservation(reservation: ReservationCreate):
+    # Validate book exists
+    if not validate_book_exists(reservation.book_id):
+        raise HTTPException(status_code=400, detail=f"Book '{reservation.book_id}' not found in book service")
+    
+    # Validate member exists
+    if not validate_member_exists(reservation.member_id):
+        raise HTTPException(status_code=400, detail=f"Member '{reservation.member_id}' not found in member service")
+    
     reservation_dict = reservation.model_dump()
     reservation_id = str(uuid4())
     reservation_dict["_id"] = reservation_id

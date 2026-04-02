@@ -379,6 +379,14 @@ class ReservationUpdate(BaseModel):
 def get_reservations():
     return _safe_forward("GET", f"{RESERVATION_SERVICE}/reservations")
 
+@router.get("/reservations/member/{member_id}")
+def get_reservations_by_member(member_id: str):
+    return _safe_forward("GET", f"{RESERVATION_SERVICE}/reservations/member/{member_id}")
+
+@router.get("/reservations/book/{book_id}")
+def get_reservations_by_book(book_id: str):
+    return _safe_forward("GET", f"{RESERVATION_SERVICE}/reservations/book/{book_id}")
+
 @router.get("/reservations/{reservation_id}")
 def get_reservation(reservation_id: str):
     return _safe_forward("GET", f"{RESERVATION_SERVICE}/reservations/{reservation_id}")
@@ -390,6 +398,10 @@ def create_reservation(payload: ReservationCreate):
 @router.put("/reservations/{reservation_id}")
 def update_reservation(reservation_id: str, payload: ReservationUpdate):
     return _safe_forward("PUT", f"{RESERVATION_SERVICE}/reservations/{reservation_id}", payload.model_dump(mode="json", exclude_unset=True))
+
+@router.put("/reservations/{reservation_id}/confirm")
+def confirm_reservation(reservation_id: str):
+    return _safe_forward("PUT", f"{RESERVATION_SERVICE}/reservations/{reservation_id}/confirm")
 
 @router.delete("/reservations/{reservation_id}")
 def delete_reservation(reservation_id: str):

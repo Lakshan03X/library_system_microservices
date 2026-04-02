@@ -12,23 +12,51 @@ def using_mongo() -> bool:
 
 
 def book_helper(book: dict) -> dict:
+    """Convert MongoDB document to response format with field mapping."""
+    # Handle both _id formats (ObjectId or string)
+    book_id_field = str(book.get("_id", ""))
+    
     return {
-        "id": str(book["_id"]),
-        "book_id": book["book_id"],
-        "title": book["title"],
-        "authorId": book["authorId"],
-        "authorName": book["authorName"],
-        "genreCategory": book["genreCategory"],
-        "publishedYear": book["publishedYear"],
-        "copiesAvailable": book["copiesAvailable"],
+        "id": book_id_field,
+        "book_id": book.get("book_id", ""),
+        "title": book.get("title", ""),
+        "authorId": book.get("authorId", book.get("author_id", book.get("AuthorId", 0))),
+        "authorName": book.get("authorName", book.get("author_name", book.get("AuthorName", ""))),
+        "genreCategory": book.get("genreCategory", book.get("genre_category", book.get("GenreCategory", book.get("genre", "")))),
+        "publishedYear": book.get("publishedYear", book.get("published_year", book.get("PublishedYear", book.get("year", 0)))),
+        "copiesAvailable": book.get("copiesAvailable", book.get("copies_available", book.get("CopiesAvailable", book.get("copies", 0)))),
     }
 
 
 @router.get("/", response_model=List[BookResponse])
 def get_all_books():
     if using_mongo():
-        return [book_helper(b) for b in book_collection.find()]
+        books = list(book_collection.find())
+        print(f"[Book Service] Found {len(books)} books in MongoDB")
+        if books:
+            print(f"[Book Service] Sample document keys: {list(books[0].keys())}")
+        return [book_helper(b) for b in books]
     return [book_helper(b) for b in memory_books.values()]
+
+
+@router.get("/debug")
+def debug_books():
+    """Debug endpoint to see raw MongoDB documents."""
+    if using_mongo():
+        books = list(book_collection.find())
+        # Convert ObjectId to string for JSON serialization
+        for book in books:
+            book["_id"] = str(book["_id"])
+        return {
+            "db_mode": DB_MODE,
+            "count": len(books),
+            "raw_documents": books
+        }
+    return {
+        "db_mode": DB_MODE,
+        "count": len(memory_books),
+        "raw_documents": list(memory_books.values())
+    }
 
 
 @router.get("/{book_id}", response_model=BookResponse)

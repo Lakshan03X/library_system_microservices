@@ -1,14 +1,41 @@
 from fastapi import APIRouter, HTTPException
 from typing import List
 from uuid import uuid4
+import os
+import requests
+from dotenv import load_dotenv
 from db import review_collection, memory_reviews, DB_MODE
 from models import ReviewCreate, ReviewUpdate, ReviewResponse
 
+load_dotenv()
+
 router = APIRouter(prefix="/reviews", tags=["Reviews"])
+
+# Service URLs for validation
+BOOK_SERVICE = os.getenv("BOOK_SERVICE", "http://localhost:8081")
+MEMBER_SERVICE = os.getenv("MEMBER_SERVICE", "http://localhost:8082")
 
 
 def using_mongo() -> bool:
     return DB_MODE == "mongo" and review_collection is not None
+
+
+def validate_book_exists(book_id: str) -> bool:
+    """Validate that a book exists in the book service."""
+    try:
+        resp = requests.get(f"{BOOK_SERVICE}/books/{book_id}", timeout=5)
+        return resp.status_code == 200
+    except requests.RequestException:
+        return False
+
+
+def validate_member_exists(member_id: str) -> bool:
+    """Validate that a member exists in the member service."""
+    try:
+        resp = requests.get(f"{MEMBER_SERVICE}/api/members/{member_id}", timeout=5)
+        return resp.status_code == 200
+    except requests.RequestException:
+        return False
 
 
 def review_helper(review) -> dict:
@@ -57,6 +84,14 @@ def get_reviews_by_member(member_id: str):
 
 @router.post("/", response_model=ReviewResponse, status_code=201)
 def create_review(review: ReviewCreate):
+    # Validate book exists
+    if not validate_book_exists(review.book_id):
+        raise HTTPException(status_code=400, detail=f"Book '{review.book_id}' not found in book service")
+    
+    # Validate member exists
+    if not validate_member_exists(review.member_id):
+        raise HTTPException(status_code=400, detail=f"Member '{review.member_id}' not found in member service")
+    
     review_dict = review.model_dump()
     internal_id = str(uuid4())
     review_dict["_id"] = internal_id

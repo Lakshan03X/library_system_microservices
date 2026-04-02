@@ -2,14 +2,41 @@ from fastapi import APIRouter, HTTPException
 from datetime import datetime
 from typing import List
 from uuid import uuid4
+import os
+import requests
+from dotenv import load_dotenv
 from db import borrow_collection, memory_borrows, DB_MODE
 from models import BorrowCreate, BorrowUpdate, BorrowResponse, BorrowStatus
 
+load_dotenv()
+
 router = APIRouter(prefix="/borrows", tags=["Borrows"])
+
+# Service URLs for validation
+BOOK_SERVICE = os.getenv("BOOK_SERVICE", "http://localhost:8081")
+MEMBER_SERVICE = os.getenv("MEMBER_SERVICE", "http://localhost:8082")
 
 
 def using_mongo() -> bool:
     return DB_MODE == "mongo" and borrow_collection is not None
+
+
+def validate_book_exists(book_id: str) -> bool:
+    """Validate that a book exists in the book service."""
+    try:
+        resp = requests.get(f"{BOOK_SERVICE}/books/{book_id}", timeout=5)
+        return resp.status_code == 200
+    except requests.RequestException:
+        return False
+
+
+def validate_member_exists(member_id: str) -> bool:
+    """Validate that a member exists in the member service."""
+    try:
+        resp = requests.get(f"{MEMBER_SERVICE}/api/members/{member_id}", timeout=5)
+        return resp.status_code == 200
+    except requests.RequestException:
+        return False
 
 
 
@@ -68,6 +95,15 @@ def get_borrow(borrow_id: str):
 
 @router.post("/", response_model=BorrowResponse)
 def create_borrow(borrow: BorrowCreate):
+    # Validate member exists
+    if not validate_member_exists(borrow.member_id):
+        raise HTTPException(status_code=400, detail=f"Member '{borrow.member_id}' not found in member service")
+    
+    # Validate all books exist
+    for book_id in borrow.book_id:
+        if not validate_book_exists(book_id):
+            raise HTTPException(status_code=400, detail=f"Book '{book_id}' not found in book service")
+    
     # Check if borrow_id already exists
     if using_mongo():
         existing = borrow_collection.find_one({"borrow_id": borrow.borrow_id})
