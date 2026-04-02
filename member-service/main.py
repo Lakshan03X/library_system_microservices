@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 from routes import router
+from db import DB_MODE, connection_error
 
 load_dotenv()
 
@@ -24,9 +25,13 @@ app.include_router(router)
 
 @app.get("/")
 def root():
-    return {"message": "Member Service", "status": "running"}
+    return {"message": "Member Service", "status": "running", "db_mode": DB_MODE}
 
 
 @app.get("/health")
 def health_check():
-    return {"status": "healthy"}
+    return {
+        "status": "healthy",
+        "db_mode": DB_MODE,
+        "db_error": connection_error
+    }
