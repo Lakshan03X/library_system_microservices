@@ -147,23 +147,23 @@ class MemberUpdate(BaseModel):
 # --------------- MEMBER SERVICE ROUTES ---------------
 @router.get("/members")
 def get_members():
-    return _safe_forward("GET", f"{MEMBER_SERVICE}/api/members")
+    return _safe_forward("GET", f"{MEMBER_SERVICE}/members/")
 
 @router.get("/members/{member_id}")
 def get_member(member_id: str):
-    return _safe_forward("GET", f"{MEMBER_SERVICE}/api/members/{member_id}")
+    return _safe_forward("GET", f"{MEMBER_SERVICE}/members/{member_id}")
 
 @router.post("/members", status_code=201)
 def create_member(payload: MemberCreate):
-    return _safe_forward("POST", f"{MEMBER_SERVICE}/api/members", payload.model_dump())
+    return _safe_forward("POST", f"{MEMBER_SERVICE}/members/", payload.model_dump())
 
 @router.put("/members/{member_id}")
 def update_member(member_id: str, payload: MemberUpdate):
-    return _safe_forward("PUT", f"{MEMBER_SERVICE}/api/members/{member_id}", payload.model_dump(exclude_unset=True))
+    return _safe_forward("PUT", f"{MEMBER_SERVICE}/members/{member_id}", payload.model_dump(exclude_unset=True))
 
 @router.delete("/members/{member_id}")
 def delete_member(member_id: str):
-    return _safe_forward("DELETE", f"{MEMBER_SERVICE}/api/members/{member_id}")
+    return _safe_forward("DELETE", f"{MEMBER_SERVICE}/members/{member_id}")
 
 
 # ===============================================================

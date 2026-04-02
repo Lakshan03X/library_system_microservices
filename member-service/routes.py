@@ -5,7 +5,7 @@ from datetime import datetime
 from db import member_collection, memory_members, DB_MODE
 from models import MemberCreate, MemberUpdate, MemberResponse
 
-router = APIRouter(prefix="/api/members", tags=["Members"])
+router = APIRouter(prefix="/members", tags=["Members"])
 
 
 def using_mongo() -> bool:
