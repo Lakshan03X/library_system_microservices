@@ -95,9 +95,6 @@ def get_borrow(borrow_id: str):
 
 @router.post("/", response_model=BorrowResponse)
 def create_borrow(borrow: BorrowCreate):
-    # Validate member exists
-    if not validate_member_exists(borrow.member_id):
-        raise HTTPException(status_code=400, detail=f"Member '{borrow.member_id}' not found in member service")
     
     # Validate all books exist
     for book_id in borrow.book_id:
@@ -123,33 +120,6 @@ def create_borrow(borrow: BorrowCreate):
         memory_borrows[internal_id] = borrow_dict
 
     return borrow_helper(borrow_dict)
-
-
-@router.put("/{borrow_id}", response_model=BorrowResponse)
-def update_borrow(borrow_id: str, borrow: BorrowUpdate):
-    if using_mongo():
-        existing = borrow_collection.find_one({"borrow_id": borrow_id})
-    else:
-        existing = next((b for b in memory_borrows.values() if b["borrow_id"] == borrow_id), None)
-
-    if not existing:
-        raise HTTPException(status_code=404, detail="Borrow record not found")
-    
-    update_data = {k: v for k, v in borrow.model_dump().items() if v is not None}
-
-    if using_mongo():
-        if update_data:
-            borrow_collection.update_one(
-                {"borrow_id": borrow_id},
-                {"$set": update_data}
-            )
-        updated_borrow = borrow_collection.find_one({"borrow_id": borrow_id})
-        return borrow_helper(updated_borrow)
-
-    if update_data:
-        existing.update(update_data)
-    memory_borrows[existing["_id"]] = existing
-    return borrow_helper(existing)
 
 
 @router.delete("/{borrow_id}")
