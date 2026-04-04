@@ -1,6 +1,6 @@
 {
-  "book_id": "B001",
-  "member_id": "M123",
+  "book_id": "BK001",
+  "member_id": "m01",
   "reserved_date": "2026-03-29T17:19:31.218Z",
   "expiry_date": "2026-04-02T17:19:31.218Z",
   "status": "pending"

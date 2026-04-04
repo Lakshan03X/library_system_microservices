@@ -91,9 +91,9 @@ def create_reservation(reservation: ReservationCreate):
     if not validate_book_exists(reservation.book_id):
         raise HTTPException(status_code=400, detail=f"Book '{reservation.book_id}' not found in book service")
     
-    # Validate member exists
-    if not validate_member_exists(reservation.member_id):
-        raise HTTPException(status_code=400, detail=f"Member '{reservation.member_id}' not found in member service")
+    # ❌ Removed member validation
+    # if not validate_member_exists(reservation.member_id):
+    #     raise HTTPException(status_code=400, detail=f"Member '{reservation.member_id}' not found in member service")
     
     reservation_dict = reservation.model_dump()
     reservation_id = str(uuid4())
@@ -105,33 +105,6 @@ def create_reservation(reservation: ReservationCreate):
         memory_reservations[reservation_id] = reservation_dict
 
     return reservation_helper(reservation_dict)
-
-
-@router.put("/{reservation_id}", response_model=ReservationOut)
-def update_reservation(reservation_id: str, reservation: ReservationUpdate):
-    if using_mongo():
-        existing = reservation_collection.find_one({"_id": reservation_id})
-    else:
-        existing = memory_reservations.get(reservation_id)
-
-    if not existing:
-        raise HTTPException(status_code=404, detail="Reservation not found")
-
-    update_data = {k: v for k, v in reservation.model_dump().items() if v is not None}
-
-    if using_mongo():
-        if update_data:
-            reservation_collection.update_one(
-                {"_id": reservation_id},
-                {"$set": update_data}
-            )
-        updated = reservation_collection.find_one({"_id": reservation_id})
-        return reservation_helper(updated)
-
-    if update_data:
-        existing.update(update_data)
-    memory_reservations[reservation_id] = existing
-    return reservation_helper(existing)
 
 
 @router.delete("/{reservation_id}")
